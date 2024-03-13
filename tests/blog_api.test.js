@@ -67,6 +67,25 @@ describe('Backend tests', () => {
     const newBlogInResponse = blogs.find(blog => blog.title === newBlog.title)
     assert(newBlogInResponse !== undefined)
   })
+
+  test('Likes not provided on Blog defaults to 0', async () => {
+    const likesBlog = {
+      title: "Likes Test",
+      author: "Likes Author",
+      url: "likesTestURL",
+    }
+
+    await api
+      .post('/api/blogs')
+      .send(likesBlog)
+      .expect(201)
+      .expect('Content-Type', /application\/json/)
+
+    const response = await api.get('/api/blogs')
+    const blogs = response.body     
+    const newBlogInResponse = blogs.find(blog => blog.title === likesBlog.title)
+    assert.strictEqual(newBlogInResponse.likes, 0)
+  })
 })
   
 after(async () => {
