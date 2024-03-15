@@ -17,6 +17,9 @@ blogsRouter.post('/', async (request, response) => {
     const result = await blog.save()
     response.status(201).json(result)
   } catch (error) {
+    if (error.name === 'ValidationError') {
+      return response.status(400).json({ error: error.message })
+    }
     logger.error('Error while posting data: ', error)
   }
 })

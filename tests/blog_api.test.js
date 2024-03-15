@@ -86,6 +86,28 @@ describe('Backend tests', () => {
     const newBlogInResponse = blogs.find(blog => blog.title === likesBlog.title)
     assert.strictEqual(newBlogInResponse.likes, 0)
   })
+
+  test('Blog without title or URL returns error code 400', async () => {
+    const blogWithoutTitle = {
+      author: "Test author",
+      url: "testURL"
+    }
+  
+    await api
+      .post('/api/blogs')
+      .send(blogWithoutTitle)
+      .expect(400)
+
+    const blogWithoutUrl = {
+      title: "Test Title",
+      author: "Test author"
+    }
+    
+    await api
+      .post('/api/blogs')
+      .send(blogWithoutUrl)
+      .expect(400)    
+  })  
 })
   
 after(async () => {
