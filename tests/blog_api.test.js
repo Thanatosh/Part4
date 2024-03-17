@@ -120,6 +120,23 @@ describe('Backend tests', () => {
     const response = await api.get('/api/blogs')
     assert.strictEqual(response.body.length, helper.initialBlogs.length - 1)
   })
+
+  test('Update likes on a blog', async () => {
+    const updatedLikes = 5
+    const blogsBefore = await api.get('/api/blogs')
+    const blogToUpdate = blogsBefore.body[0]
+
+    await api
+      .put(`/api/blogs/${blogToUpdate.id}`)
+      .send({ likes: updatedLikes })
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+
+    const blogsAfter = await api.get('/api/blogs')
+    const updatedBlog = blogsAfter.body.find(blog => blog.id === blogToUpdate.id)
+  
+    assert.strictEqual(updatedBlog.likes, updatedLikes)
+  })
 })
   
 after(async () => {
