@@ -8,10 +8,12 @@ const Blog = require('../models/blog')
 const helper = require('./test_helper')
 
 describe('Backend tests', () => {
+  let initialBlogid = []
 
   const initializeDatabase = async () => {
     await Blog.deleteMany({})
-    await Blog.insertMany(helper.initialBlogs)
+    const insertedBlogs = await Blog.insertMany(helper.initialBlogs)
+    initialBlogid = insertedBlogs.map(blog => blog._id.toString())
   }
 
   beforeEach(async () => {
@@ -107,7 +109,17 @@ describe('Backend tests', () => {
       .post('/api/blogs')
       .send(blogWithoutUrl)
       .expect(400)    
-  })  
+  })
+
+  test('Delete blog by ID', async () => {
+    const deleteId = initialBlogid[0]
+    await api
+      .delete(`/api/blogs/${deleteId}`)
+      .expect(204)
+
+    const response = await api.get('/api/blogs')
+    assert.strictEqual(response.body.length, helper.initialBlogs.length - 1)
+  })
 })
   
 after(async () => {
