@@ -172,6 +172,46 @@ describe('When there is initially one user at db', () => {
     const usernames = usersAtEnd.map(u => u.username)
     assert(usernames.includes(newUser.username))
   })
+
+  test('Unique usernames and correct statuscode when non-unique username posted', async () => {
+    const usersAtStart = await helper.usersInDb()
+    
+    const newUser = {
+      username: 'root',
+      name: 'Superuser',
+      password: 'salainen',
+    }
+
+    const result = await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(400)
+      .expect('Content-Type', /application\/json/)
+
+    const usersAtEnd = await helper.usersInDb()
+    assert(result.body.error.includes('expected `username` to be unique'))
+    assert.strictEqual(usersAtEnd.length, usersAtStart.length)
+  })
+
+  test('Username and password at least 3 characters with correct status code on fail', async () => {
+    const usersAtStart = await helper.usersInDb()
+  
+    const newUser = {
+      username: 'us',
+      name: 'Test User',
+      password: 'pw',
+    };
+  
+    const result = await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(400)
+      .expect('Content-Type', /application\/json/)
+  
+    const usersAtEnd = await helper.usersInDb()
+    assert(result.body.error.includes('Username and password must be atleast 3 character long')) 
+    assert.strictEqual(usersAtEnd.length, usersAtStart.length)
+  })
 })
   
 after(async () => {

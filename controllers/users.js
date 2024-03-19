@@ -8,8 +8,13 @@ usersRouter.get('/', async (request, response) => {
 })
 
 usersRouter.post('/', async (request, response) => {
+  const { username, name, password } = request.body
+
+  if (username.length < 3 || password.length < 3) {
+    return response.status(400).json({ error: 'Username and password must be atleast 3 character long' })
+  }
+
   try {
-    const { username, name, password } = request.body
     const saltRounds = 10
     const passwordHash = await bcrypt.hash(password, saltRounds)
 
@@ -23,8 +28,12 @@ usersRouter.post('/', async (request, response) => {
 
     response.status(201).json(savedUser)
   } catch (error) {
-    console.error('Error while creating user:', error)
-    response.status(500).json({ error: 'An unexpected error occurred' })
+    if (error.code === 11000 && error.keyPattern.username) {
+      return response.status(400).json({ error: 'expected `username` to be unique' })
+    } else {
+      console.error('Error while creating user:', error)
+      response.status(500).json({ error: 'An unexpected error occurred' })
+    }
   }
 })
 
