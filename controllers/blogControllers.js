@@ -1,10 +1,14 @@
 const blogsRouter = require('express').Router()
 const Blog = require('../models/blog')
+const User = require('../models/user')
 const logger = require('../utils/logger')
 
 blogsRouter.get('/', async (request, response) => {
   try {
-    const blogs = await Blog.find({})
+    const blogs = await Blog.find({}).populate({
+      path: 'user',
+      select: '-blogs'
+    })
     response.json(blogs)
   } catch (error) {
     logger.error('Error while receiving data: ', error)
@@ -12,10 +16,21 @@ blogsRouter.get('/', async (request, response) => {
 })
 
 blogsRouter.post('/', async (request, response) => {
-  const blog = new Blog(request.body)
   try {
-    const result = await blog.save()
-    response.status(201).json(result)
+    const firstUser = await User.findOne({}).select('_id')
+    
+    const newblog = new Blog({
+      title: request.body.title,
+      author: request.body.author,
+      url: request.body.url,
+      likes: request.body.likes || 0,
+      user: firstUser._id
+    })
+
+    const savedBlog = await newblog.save()
+
+    await User.findByIdAndUpdate(firstUser._id, { $addToSet: { blogs: savedBlog._id } })
+    response.status(201).json(savedBlog)
   } catch (error) {
     if (error.name === 'ValidationError') {
       return response.status(400).json({ error: error.message })

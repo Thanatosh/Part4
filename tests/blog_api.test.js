@@ -199,8 +199,8 @@ describe('When there is initially one user at db', () => {
     const newUser = {
       username: 'us',
       name: 'Test User',
-      password: 'pw',
-    };
+      password: 'pw'
+    }
   
     const result = await api
       .post('/api/users')
