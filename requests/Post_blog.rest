@@ -3,8 +3,8 @@ Content-Type: application/json
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkpvSG8iLCJpZCI6IjY1ZmJlZWVmNmNjMzdlZjkxNjkyOTBhYyIsImlhdCI6MTcxMTA5MzczM30.R-kJYkvJ0ehX98FoDbn_DZh5lgVofhFYJrfq_5D2zjA
 
 {
-    "title": "Authorized Blog",
-    "author": "Authorized Person",
+    "title": "Authorized2 Blog",
+    "author": "Authorized2 Person",
     "url": "TestingURL",
     "likes": 25
 }

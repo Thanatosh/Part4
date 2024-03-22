@@ -19,6 +19,18 @@ const connectToMongoDB = async () => {
 
 connectToMongoDB()
 
+const tokenExtractor = (request, response, next) => {
+  const authorization = request.get('authorization')
+  if (authorization && authorization.startsWith('Bearer')) {
+    request.token = authorization.replace('Bearer ', '')
+  } else {
+    request.token = null
+  }
+  next()
+}
+
+app.use(tokenExtractor)
+
 app.use(cors())
 app.use(express.json())
 app.use('/api/login', loginRouter)
