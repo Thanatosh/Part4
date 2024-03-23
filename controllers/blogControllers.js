@@ -1,4 +1,5 @@
 const blogsRouter = require('express').Router()
+const blog = require('../models/blog')
 const Blog = require('../models/blog')
 const User = require('../models/user')
 const logger = require('../utils/logger')
@@ -48,10 +49,25 @@ blogsRouter.post('/', async (request, response) => {
 
 blogsRouter.delete('/:id', async (request, response) => {
   try {
+    const decodedToken = jwt.verify(request.token, process.env.SECRET)
+    if (!decodedToken.id) {
+      return response.status(401).json({ error: 'token invalid' })
+    }
+
+    const blogToDelete = await Blog.findById(request.params.id)
+    if (!blogToDelete) {
+      return response.status(404).json({ error: 'blog not found' })
+    }
+    
+    if (blogToDelete.user.toString() !== decodedToken.id) {
+      return response.status(403).json({ error: 'unauthorized access' })
+    }
+
     await Blog.findByIdAndDelete(request.params.id)
     response.status(204).end()
   } catch (error) {
     logger.error('Error while deleting blog: ', error)
+    response.status(500).json({ error: 'internal server error' })
   }
 })
 
