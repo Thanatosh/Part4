@@ -1,10 +1,10 @@
 POST http://localhost:3003/api/blogs
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkpvSG8iLCJpZCI6IjY1ZmJlZWVmNmNjMzdlZjkxNjkyOTBhYyIsImlhdCI6MTcxMTA5MzczM30.R-kJYkvJ0ehX98FoDbn_DZh5lgVofhFYJrfq_5D2zjA
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkpvSG8iLCJpZCI6IjY1ZmJlZWVmNmNjMzdlZjkxNjkyOTBhYyIsImlhdCI6MTcxMTI3NjAzN30.OQG8UvkAXvJBaRb6GqfbRDufKyDU49urjQ1Kd5E9yzY
 
 {
-    "title": "Authorized2 Blog",
-    "author": "Authorized2 Person",
-    "url": "TestingURL",
-    "likes": 25
+    "title": "Blogi",
+    "author": "Personi",
+    "url": "Testi",
+    "likes": 2
 }

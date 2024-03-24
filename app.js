@@ -2,6 +2,7 @@ const express = require('express')
 const app = express()
 const cors = require('cors')
 const mongoose = require('mongoose')
+const tokenExtractor = require('./middleware/tokenExtractor')
 const logger = require('./utils/logger')
 const config = require('./utils/config')
 const loginRouter = require('./controllers/login')
@@ -19,22 +20,12 @@ const connectToMongoDB = async () => {
 
 connectToMongoDB()
 
-const tokenExtractor = (request, response, next) => {
-  const authorization = request.get('authorization')
-  if (authorization && authorization.startsWith('Bearer')) {
-    request.token = authorization.replace('Bearer ', '')
-  } else {
-    request.token = null
-  }
-  next()
-}
-
-app.use(tokenExtractor)
-
 app.use(cors())
 app.use(express.json())
-app.use('/api/login', loginRouter)
+app.use(tokenExtractor)
+
 app.use('/api/blogs', blogsRouter)
 app.use('/api/users', usersRouter)
+app.use('/api/login', loginRouter)
 
 module.exports = app

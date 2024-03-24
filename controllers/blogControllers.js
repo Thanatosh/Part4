@@ -1,9 +1,9 @@
 const blogsRouter = require('express').Router()
+const userExtractor = require('../middleware/userExtractor')
 const blog = require('../models/blog')
 const Blog = require('../models/blog')
 const User = require('../models/user')
 const logger = require('../utils/logger')
-const jwt = require('jsonwebtoken')
 
 blogsRouter.get('/', async (request, response) => {
   try {
@@ -17,25 +17,21 @@ blogsRouter.get('/', async (request, response) => {
   }
 })
 
-blogsRouter.post('/', async (request, response) => {
+blogsRouter.post('/', userExtractor, async (request, response) => {
   try {
-    const decodedToken = jwt.verify(request.token, process.env.SECRET)
-    if (!decodedToken.id) {
-      return response.status(401).json({ error: 'token invalid' })
-    }
-    const firstUser = await User.findById(decodedToken.id)
+    const user = request.user
     
     const newblog = new Blog({
       title: request.body.title,
       author: request.body.author,
       url: request.body.url,
       likes: request.body.likes || 0,
-      user: firstUser._id
+      user: user._id
     })
 
     const savedBlog = await newblog.save()
 
-    await User.findByIdAndUpdate(firstUser._id, { $addToSet: { blogs: savedBlog._id } })
+    await User.findByIdAndUpdate(user._id, { $addToSet: { blogs: savedBlog._id } })
     response.status(201).json(savedBlog)
   } catch (error) {
     if (error.name === 'ValidationError') {
@@ -47,19 +43,16 @@ blogsRouter.post('/', async (request, response) => {
   }
 })
 
-blogsRouter.delete('/:id', async (request, response) => {
+blogsRouter.delete('/:id', userExtractor, async (request, response) => {
   try {
-    const decodedToken = jwt.verify(request.token, process.env.SECRET)
-    if (!decodedToken.id) {
-      return response.status(401).json({ error: 'token invalid' })
-    }
+    const user = request.user
 
     const blogToDelete = await Blog.findById(request.params.id)
     if (!blogToDelete) {
       return response.status(404).json({ error: 'blog not found' })
     }
     
-    if (blogToDelete.user.toString() !== decodedToken.id) {
+    if (blogToDelete.user.toString() !== user._id.toString()) {
       return response.status(403).json({ error: 'unauthorized access' })
     }
 
