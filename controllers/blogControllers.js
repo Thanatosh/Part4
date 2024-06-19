@@ -1,6 +1,5 @@
 const blogsRouter = require('express').Router()
 const userExtractor = require('../middleware/userExtractor')
-const blog = require('../models/blog')
 const Blog = require('../models/blog')
 const User = require('../models/user')
 const logger = require('../utils/logger')
@@ -14,6 +13,42 @@ blogsRouter.get('/', async (request, response) => {
     response.json(blogs)
   } catch (error) {
     logger.error('Error while receiving data: ', error)
+  }
+})
+
+blogsRouter.post('/:id/comments', async (request, response) => {
+  const { comment } = request.body
+  const { id } = request.params
+
+  try {
+    const blog = await Blog.findById(id)
+    if (!blog) {
+      return response.status(404).json({ error: 'blog not found' });
+    }
+
+    blog.comments = blog.comments.concat(comment)
+    const updatedBlog = await blog.save()
+    response.status(201).json(updatedBlog)
+  } catch (error) {
+    console.error('Error adding comment:', error)
+    response.status(400).json({ error: 'Failed to add comment' })
+  }
+})
+
+blogsRouter.get('/:id', async (request, response) => {
+  try {
+    const blog = await Blog.findById(request.params.id).populate({
+      path: 'user',
+      select: '-blogs'
+    })
+    if (blog) {
+      response.json(blog)
+    } else {
+      response.status(404).json({ error: 'blog not found' })
+    }
+  } catch (error) {
+    logger.error('Error while fetching blog by ID: ', error)
+    response.status(400).json({ error: 'malformatted id' })
   }
 })
 
@@ -65,12 +100,21 @@ blogsRouter.delete('/:id', userExtractor, async (request, response) => {
 })
 
 blogsRouter.put('/:id', async (request, response) => {
+  const { id } = request.params;
+  const updatedBlog = request.body;
+
   try {
-    const updatedBlog = await Blog.findByIdAndUpdate(request.params.id, { likes: request.body.likes }, { new: true })
-    response.json(updatedBlog)
+    const blog = await Blog.findByIdAndUpdate(id, updatedBlog, { new: true })
+      .populate('user', { username: 1, name: 1 });
+    if (!blog) {
+      return response.status(404).json({ error: 'blog not found' });
+    }
+    response.json(blog);
   } catch (error) {
-    logger.error('Error while updating blog: ', error)
+    console.error('Error updating blog:', error);
+    response.status(400).send({ error: 'Failed to update blog' });
   }
-})
+});
+
 
 module.exports = blogsRouter
